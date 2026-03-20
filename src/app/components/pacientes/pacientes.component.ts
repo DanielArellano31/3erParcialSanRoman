@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { PacientesService } from '../../services/pacientes.service';
 import { AuthService } from '../../services/auth.service';
@@ -12,7 +12,7 @@ import { EmailFormatPipe } from '../../pipes/email-format.pipe';
 @Component({
   selector: 'app-pacientes',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, EmailFormatPipe],
+  imports: [CommonModule, ReactiveFormsModule, EmailFormatPipe, RouterLink],
   templateUrl: './pacientes.component.html',
   styleUrls: ['./pacientes.component.css']
 })
