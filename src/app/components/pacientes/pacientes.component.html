@@ -1,10 +1,14 @@
 <div class="container mt-4">
   <!-- Header -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Gestión de Pacientes</h2>
-    <div *ngIf="user$ | async as user">
-      <span class="me-3">Bienvenido, {{ user.displayName }}</span>
-      <button class="btn btn-outline-danger" (click)="logout()">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>🏥 MediApp</h2>
+    <div class="d-flex align-items-center gap-2">
+      <a routerLink="/pacientes" class="btn btn-sm btn-primary">Pacientes</a>
+      <a routerLink="/appointments" class="btn btn-sm btn-outline-primary">Mis Citas</a>
+    </div>
+    <div *ngIf="user$ | async as user" class="d-flex align-items-center gap-2">
+      <span class="text-muted small">{{ user.displayName }}</span>
+      <button class="btn btn-outline-danger btn-sm" (click)="logout()">
         Cerrar Sesión
       </button>
     </div>

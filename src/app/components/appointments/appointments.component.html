@@ -1,0 +1,222 @@
+<div class="appointments-page">
+
+  <!-- ───── NAVBAR ───── -->
+  <nav class="app-navbar">
+    <div class="navbar-brand">
+      <span class="brand-icon">🏥</span>
+      <span class="brand-text">MediApp</span>
+    </div>
+
+    <div class="navbar-tabs">
+      <a class="nav-tab" routerLink="/pacientes">Pacientes</a>
+      <a class="nav-tab active">Mis Citas</a>
+    </div>
+
+    <div class="navbar-user" *ngIf="user$ | async as user">
+      <img [src]="user.photoURL" [alt]="user.displayName" class="user-avatar"
+           onerror="this.src='https://ui-avatars.com/api/?name=U&background=4f46e5&color=fff'" />
+      <span class="user-name">{{ user.displayName }}</span>
+      <button class="btn-logout" (click)="logout()">Salir</button>
+    </div>
+  </nav>
+
+  <div class="page-content">
+
+    <!-- ───── ALERTS ───── -->
+    <div class="alert alert-success alert-dismissible" *ngIf="success">
+      <span>✅ {{ success }}</span>
+      <button type="button" class="btn-close-alert" (click)="success = null">✕</button>
+    </div>
+    <div class="alert alert-danger alert-dismissible" *ngIf="error">
+      <span>⚠️ {{ error }}</span>
+      <button type="button" class="btn-close-alert" (click)="error = null">✕</button>
+    </div>
+
+    <!-- ───── STATS CARDS ───── -->
+    <div class="stats-row" *ngIf="!loading">
+      <div class="stat-card stat-total">
+        <div class="stat-number">{{ appointments.length }}</div>
+        <div class="stat-label">Total de citas</div>
+      </div>
+      <div class="stat-card stat-upcoming">
+        <div class="stat-number">{{ getUpcoming().length }}</div>
+        <div class="stat-label">Próximas</div>
+      </div>
+      <div class="stat-card stat-past">
+        <div class="stat-number">{{ getPast().length }}</div>
+        <div class="stat-label">Pasadas / Canceladas</div>
+      </div>
+      <div class="stat-card stat-doctors">
+        <div class="stat-number">{{ doctors.length }}</div>
+        <div class="stat-label">Doctores disponibles</div>
+      </div>
+    </div>
+
+    <div class="main-grid">
+
+      <!-- ───── FORM ───── -->
+      <div class="form-panel">
+        <div class="panel-header">
+          <h3>{{ editingId ? '✏️ Editar cita' : '➕ Nueva cita' }}</h3>
+          <button class="btn-cancel-edit" *ngIf="editingId" (click)="resetForm()">Cancelar</button>
+        </div>
+
+        <form [formGroup]="appointmentForm" (ngSubmit)="onSubmit()" class="appt-form">
+
+          <!-- Doctor -->
+          <div class="form-group">
+            <label class="form-label">Doctor *</label>
+            <select class="form-select" formControlName="doctorId"
+                    [class.is-invalid]="appointmentForm.get('doctorId')?.invalid && appointmentForm.get('doctorId')?.touched">
+              <option value="" disabled>
+                {{ loadingDoctors ? 'Cargando doctores...' : 'Selecciona un doctor' }}
+              </option>
+              <option *ngFor="let doc of doctors" [value]="doc.id">
+                Dr. {{ doc.name }} — {{ doc.specialty }}
+              </option>
+            </select>
+            <div class="invalid-feedback" *ngIf="appointmentForm.get('doctorId')?.errors?.['required'] && appointmentForm.get('doctorId')?.touched">
+              Selecciona un doctor
+            </div>
+          </div>
+
+          <!-- Fecha y Hora -->
+          <div class="form-group">
+            <label class="form-label">Fecha y Hora *</label>
+            <input type="datetime-local" class="form-control" formControlName="date"
+                   [class.is-invalid]="appointmentForm.get('date')?.invalid && appointmentForm.get('date')?.touched" />
+            <div class="invalid-feedback" *ngIf="appointmentForm.get('date')?.errors?.['required'] && appointmentForm.get('date')?.touched">
+              La fecha es requerida
+            </div>
+          </div>
+
+          <!-- Motivo -->
+          <div class="form-group">
+            <label class="form-label">Motivo de consulta *</label>
+            <textarea class="form-control" rows="3" formControlName="reason"
+                      placeholder="Describe brevemente el motivo..."
+                      [class.is-invalid]="appointmentForm.get('reason')?.invalid && appointmentForm.get('reason')?.touched"></textarea>
+            <div class="invalid-feedback" *ngIf="appointmentForm.get('reason')?.errors?.['required'] && appointmentForm.get('reason')?.touched">
+              El motivo es requerido
+            </div>
+            <div class="invalid-feedback" *ngIf="appointmentForm.get('reason')?.errors?.['minlength'] && appointmentForm.get('reason')?.touched">
+              Mínimo 5 caracteres
+            </div>
+          </div>
+
+          <!-- Notas -->
+          <div class="form-group">
+            <label class="form-label">Notas adicionales</label>
+            <textarea class="form-control" rows="2" formControlName="notes"
+                      placeholder="Alergias, medicamentos, instrucciones..."></textarea>
+          </div>
+
+          <!-- Status (solo en edición) -->
+          <div class="form-group" *ngIf="editingId">
+            <label class="form-label">Estado</label>
+            <div class="status-buttons">
+              <button type="button"
+                      *ngFor="let opt of statusOptions"
+                      [class]="'status-btn status-' + opt.value"
+                      [class.active]="appointmentForm.get('status')?.value === opt.value"
+                      (click)="appointmentForm.get('status')?.setValue(opt.value)">
+                {{ opt.label }}
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit" [disabled]="appointmentForm.invalid">
+            {{ editingId ? 'Guardar cambios' : 'Agendar cita' }}
+          </button>
+        </form>
+      </div>
+
+      <!-- ───── LIST ───── -->
+      <div class="list-panel">
+
+        <!-- Loading -->
+        <div class="loading-state" *ngIf="loading">
+          <div class="spinner"></div>
+          <p>Cargando citas...</p>
+        </div>
+
+        <!-- Empty -->
+        <div class="empty-state" *ngIf="!loading && appointments.length === 0">
+          <div class="empty-icon">📅</div>
+          <h4>Sin citas registradas</h4>
+          <p>Agenda tu primera cita usando el formulario.</p>
+        </div>
+
+        <!-- Upcoming -->
+        <ng-container *ngIf="!loading && getUpcoming().length > 0">
+          <h4 class="section-label">Próximas citas</h4>
+          <div class="appointment-card upcoming"
+               *ngFor="let a of getUpcoming()">
+            <div class="appt-header">
+              <div class="appt-date">
+                <span class="date-icon">📅</span>
+                {{ formatDate(a.date) }}
+              </div>
+              <span [class]="getStatusClass(a.status)">{{ getStatusLabel(a.status) }}</span>
+            </div>
+
+            <div class="appt-body">
+              <div class="appt-doctor" *ngIf="a.doctor">
+                <span class="doctor-icon">👨‍⚕️</span>
+                <div>
+                  <strong>Dr. {{ a.doctor.name }}</strong>
+                  <small>{{ a.doctor.specialty }}</small>
+                </div>
+              </div>
+              <div class="appt-reason">
+                <span class="reason-label">Motivo:</span> {{ a.reason }}
+              </div>
+              <div class="appt-notes" *ngIf="a.notes">
+                <span class="notes-label">Notas:</span> {{ a.notes }}
+              </div>
+            </div>
+
+            <div class="appt-actions">
+              <button class="btn-edit" (click)="editAppointment(a)">Editar</button>
+              <button class="btn-delete" (click)="deleteAppointment(a.id)">Eliminar</button>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Past -->
+        <ng-container *ngIf="!loading && getPast().length > 0">
+          <h4 class="section-label past-label">Historial</h4>
+          <div class="appointment-card past"
+               *ngFor="let a of getPast()">
+            <div class="appt-header">
+              <div class="appt-date muted">
+                <span class="date-icon">🕐</span>
+                {{ formatDate(a.date) }}
+              </div>
+              <span [class]="getStatusClass(a.status)">{{ getStatusLabel(a.status) }}</span>
+            </div>
+
+            <div class="appt-body">
+              <div class="appt-doctor" *ngIf="a.doctor">
+                <span class="doctor-icon">👨‍⚕️</span>
+                <div>
+                  <strong>Dr. {{ a.doctor.name }}</strong>
+                  <small>{{ a.doctor.specialty }}</small>
+                </div>
+              </div>
+              <div class="appt-reason">
+                <span class="reason-label">Motivo:</span> {{ a.reason }}
+              </div>
+            </div>
+
+            <div class="appt-actions">
+              <button class="btn-edit" (click)="editAppointment(a)">Editar</button>
+              <button class="btn-delete" (click)="deleteAppointment(a.id)">Eliminar</button>
+            </div>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+  </div>
+</div>
