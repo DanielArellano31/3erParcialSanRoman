@@ -142,7 +142,6 @@
 
         <!-- Empty -->
         <div class="empty-state" *ngIf="!loading && appointments.length === 0">
-          <div class="empty-icon">📅</div>
           <h4>Sin citas registradas</h4>
           <p>Agenda tu primera cita usando el formulario.</p>
         </div>
@@ -154,7 +153,6 @@
                *ngFor="let a of getUpcoming()">
             <div class="appt-header">
               <div class="appt-date">
-                <span class="date-icon">📅</span>
                 {{ formatDate(a.date) }}
               </div>
               <span [class]="getStatusClass(a.status)">{{ getStatusLabel(a.status) }}</span>
@@ -162,7 +160,6 @@
 
             <div class="appt-body">
               <div class="appt-doctor" *ngIf="a.doctor">
-                <span class="doctor-icon">👨‍⚕️</span>
                 <div>
                   <strong>Dr. {{ a.doctor.name }}</strong>
                   <small>{{ a.doctor.specialty }}</small>
@@ -190,7 +187,6 @@
                *ngFor="let a of getPast()">
             <div class="appt-header">
               <div class="appt-date muted">
-                <span class="date-icon">🕐</span>
                 {{ formatDate(a.date) }}
               </div>
               <span [class]="getStatusClass(a.status)">{{ getStatusLabel(a.status) }}</span>
@@ -198,7 +194,6 @@
 
             <div class="appt-body">
               <div class="appt-doctor" *ngIf="a.doctor">
-                <span class="doctor-icon">👨‍⚕️</span>
                 <div>
                   <strong>Dr. {{ a.doctor.name }}</strong>
                   <small>{{ a.doctor.specialty }}</small>

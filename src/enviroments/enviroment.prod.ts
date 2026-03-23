@@ -1,6 +1,6 @@
 export const enviroment = {
-  production: false,
-  apiUrl: 'http://localhost:3001/api',
+  production: true,
+  apiUrl: 'https://3erparcialsanroman-backend-production.up.railway.app/api',
   firebaseConfig: {
     apiKey: "AIzaSyBXEzGoYkHZY9NS7ilC9Jl-6lmn1__H8GA",
     authDomain: "gestion-pacientes-57935.firebaseapp.com",

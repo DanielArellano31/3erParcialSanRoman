@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { enviroment } from "../../enviroments/enviroments";
 
 export interface Doctor {
   id: string;
@@ -38,8 +39,7 @@ export interface UpdateAppointmentPayload {
 
 @Injectable({ providedIn: 'root' })
 export class AppointmentsService {
-  private apiUrl = 'http://localhost:3000/api';
-
+ private apiUrl = enviroment.apiUrl;
   constructor(private http: HttpClient) {}
 
   getAppointments(patientId: string): Observable<Appointment[]> {
