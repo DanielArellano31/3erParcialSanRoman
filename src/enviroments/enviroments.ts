@@ -2,11 +2,11 @@ export const enviroment = {
   production: false,
   apiUrl: 'http://localhost:3001/api',
   firebaseConfig: {
-    apiKey: "AIzaSyBXEzGoYkHZY9NS7ilC9Jl-6lmn1__H8GA",
-    authDomain: "gestion-pacientes-57935.firebaseapp.com",
-    projectId: "gestion-pacientes-57935",
-    storageBucket: "gestion-pacientes-57935.firebasestorage.app",
-    messagingSenderId: "129916446016",
-    appId: "1:129916446016:web:3ac9e075c75074abc686a5"
+    apiKey: "AIzaSyAoolv4MIag0fzpPNu93ZHfP-qJyf-vXUg",
+    authDomain: "tercerparcialsanroman.firebaseapp.com",
+    projectId: "tercerparcialsanroman",
+    storageBucket: "tercerparcialsanroman.firebasestorage.app",
+    messagingSenderId: "330287997843",
+    appId: "1:330287997843:web:773fb47a263d475d4a3e66"
   }
 }
